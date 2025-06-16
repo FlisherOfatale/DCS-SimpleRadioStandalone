@@ -14,9 +14,8 @@ public class PropertyChangedBaseClass : INotifyPropertyChanged
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            //todo
         }
     }
 }

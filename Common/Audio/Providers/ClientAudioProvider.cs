@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Models;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Settings;
@@ -31,7 +30,6 @@ public class ClientAudioProvider : AudioProvider
         var radios = Constants.MAX_RADIOS;
         if (!passThrough)
         {
-         
             JitterBufferProviderInterface =
                 new JitterBufferProviderInterface[radios];
 
@@ -40,14 +38,11 @@ public class ClientAudioProvider : AudioProvider
                     new JitterBufferProviderInterface(new WaveFormat(Constants.OUTPUT_SAMPLE_RATE, 1));
         }
         //    waveWriter = new NAudio.Wave.WaveFileWriter($@"C:\\temp\\output{RandomFloat()}.wav", new WaveFormat(Constants.OUTPUT_SAMPLE_RATE, 1));
-        
-        
+
+
         ambientEffectProgress = new Dictionary<string, int>[radios];
 
-        for (int i = 0; i < radios; i++)
-        {
-            ambientEffectProgress[i] = new Dictionary<string, int>();
-        }
+        for (var i = 0; i < radios; i++) ambientEffectProgress[i] = new Dictionary<string, int>();
     }
 
     public JitterBufferProviderInterface[] JitterBufferProviderInterface { get; }
@@ -118,8 +113,10 @@ public class ClientAudioProvider : AudioProvider
 
         LastUpdate = DateTime.Now.Ticks;
 
+        //return and skip jitter buffer if its passthrough as its local mic
         if (passThrough)
             //return MONO PCM 16 as bytes
+            // NOT MONO PCM 32
             return new JitterBufferAudio
             {
                 Audio = audio.PcmAudioFloat,
@@ -152,73 +149,8 @@ public class ClientAudioProvider : AudioProvider
             Encryption = audio.Encryption
         });
 
+
         return null;
-
-
-        //TODO check this - this is the old logic from the client
-        // if (audio.OriginalClientGuid == ClientStateSingleton.Instance.ShortGUID)
-        // {
-        //     // catch own transmissions and prevent them from being added to JitterBuffer unless its passthrough
-        //     if (passThrough)
-        //         //return MONO PCM 16 as bytes
-        //         return new JitterBufferAudio
-        //         {
-        //             Audio = audio.PcmAudioFloat,
-        //             PacketNumber = audio.PacketNumber,
-        //             Decryptable = decrytable,
-        //             Modulation = (Modulation)audio.Modulation,
-        //             ReceivedRadio = audio.ReceivedRadio,
-        //             Volume = audio.Volume,
-        //             IsSecondary = audio.IsSecondary,
-        //             Frequency = audio.Frequency,
-        //             NoAudioEffects = audio.NoAudioEffects,
-        //             Guid = audio.ClientGuid,
-        //             OriginalClientGuid = audio.OriginalClientGuid,
-        //             Encryption = audio.Encryption
-        //         };
-        //
-        //     return null;
-        // }
-        //
-        // if (!passThrough)
-        // {
-        //     JitterBufferProviderInterface[audio.ReceivedRadio].AddSamples(new JitterBufferAudio
-        //     {
-        //         Audio = audio.PcmAudioFloat,
-        //         PacketNumber = audio.PacketNumber,
-        //         Decryptable = decrytable,
-        //         Modulation = (Modulation)audio.Modulation,
-        //         ReceivedRadio = audio.ReceivedRadio,
-        //         Volume = audio.Volume,
-        //         IsSecondary = audio.IsSecondary,
-        //         Frequency = audio.Frequency,
-        //         NoAudioEffects = audio.NoAudioEffects,
-        //         Guid = audio.ClientGuid,
-        //         OriginalClientGuid = audio.OriginalClientGuid,
-        //         Encryption = audio.Encryption
-        //     });
-        //
-        //     return null;
-        // }
-        //
-        // //return MONO PCM 32 as bytes
-        // return new JitterBufferAudio
-        // {
-        //     Audio = audio.PcmAudioFloat,
-        //     PacketNumber = audio.PacketNumber,
-        //     Decryptable = decrytable,
-        //     Modulation = (Modulation)audio.Modulation,
-        //     ReceivedRadio = audio.ReceivedRadio,
-        //     Volume = audio.Volume,
-        //     IsSecondary = audio.IsSecondary,
-        //     Frequency = audio.Frequency,
-        //     NoAudioEffects = audio.NoAudioEffects,
-        //     Guid = audio.ClientGuid,
-        //     OriginalClientGuid = audio.OriginalClientGuid,
-        //     Encryption = audio.Encryption
-        // };
-
-        //timer.Stop();
     }
 
     //high throughput - cache these settings for 3 seconds

@@ -12,6 +12,7 @@ using Caliburn.Micro;
 using Ciribob.DCS.SimpleRadio.Standalone.Client.Network.DCS;
 using Ciribob.DCS.SimpleRadio.Standalone.Client.Properties;
 using Ciribob.DCS.SimpleRadio.Standalone.Client.UI.ClientWindow.ClientSettingsControl.Model;
+using Ciribob.DCS.SimpleRadio.Standalone.Client.UI.ClientWindow.RadioOverlayWindow.PresetChannels;
 using Ciribob.DCS.SimpleRadio.Standalone.Client.Utils;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Models;
 using Ciribob.DCS.SimpleRadio.Standalone.Common.Audio.Providers;
@@ -239,6 +240,44 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         }
     }
 
+    public bool DisallowedAudioTone
+    {
+        get => _globalSettings.GetClientSettingBool(GlobalSettingsKeys.DisallowedAudioTone);
+        set
+        {
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.DisallowedAudioTone, value);
+            NotifyPropertyChanged();
+        }
+    }
+
+    public bool DisableExpansionRadios
+    {
+        get => _globalSettings.ProfileSettingsStore.GetClientSettingBool(
+            ProfileSettingsKeys.DisableExpansionRadios);
+        set
+        {
+            _globalSettings.ProfileSettingsStore.SetClientSettingBool(ProfileSettingsKeys.DisableExpansionRadios,
+                value);
+            NotifyPropertyChanged();
+        }
+    }
+    
+    public List<string> ServerPresetConfigurations => ProfileSettingsStore.ServerPresetSettings;
+
+    public string SelectedServerPresetConfiguration
+    {
+        set
+        {
+            GlobalSettingsStore.Instance.ProfileSettingsStore.SetClientSettingString(
+                ProfileSettingsKeys.ServerPresetSelection, value);
+            NotifyPropertyChanged();
+            EventBus.Instance.PublishOnUIThreadAsync(new ServerSettingsPresetsSettingChangedMessage());
+        }
+        get =>
+            GlobalSettingsStore.Instance.ProfileSettingsStore.GetClientSettingString(ProfileSettingsKeys
+                .ServerPresetSelection);
+    }
+
     public bool VOXEnabled
     {
         get => _globalSettings.GetClientSettingBool(GlobalSettingsKeys.VOX);
@@ -270,9 +309,9 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         }
     }
 
-    public int VOXMinimumRMS
+    public double VOXMinimumRMS
     {
-        get => _globalSettings.GetClientSettingInt(GlobalSettingsKeys.VOXMinimumDB);
+        get => _globalSettings.GetClientSettingDouble(GlobalSettingsKeys.VOXMinimumDB);
         set
         {
             _globalSettings.SetClientSetting(GlobalSettingsKeys.VOXMinimumDB, value);
@@ -302,10 +341,10 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
 
     public int RecordingQuality
     {
-        get => _globalSettings.GetClientSettingInt(GlobalSettingsKeys.RecordingQuality);
+        get => int.Parse(_globalSettings.GetClientSetting(GlobalSettingsKeys.RecordingQuality).StringValue.TrimStart('V'));
         set
         {
-            _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingQuality, value);
+            _globalSettings.SetClientSetting(GlobalSettingsKeys.RecordingQuality, $"V{value}");
             NotifyPropertyChanged();
         }
     }
@@ -1145,6 +1184,8 @@ public class ClientSettingsViewModel : PropertyChangedBaseClass, IHandle<NewUnit
         NotifyPropertyChanged(nameof(RadioChannel9));
         NotifyPropertyChanged(nameof(RadioChannel10));
         NotifyPropertyChanged(nameof(Intercom));
+        
+        NotifyPropertyChanged(nameof(ServerPresetConfigurations));
 
         //TODO send message to tell input to reload!
         //TODO pick up in inputhandler that settings have changed?

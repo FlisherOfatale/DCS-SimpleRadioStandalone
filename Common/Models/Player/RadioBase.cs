@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Ciribob.DCS.SimpleRadio.Standalone.Common.Models.Player;
 
-public class RadioBase
+public partial class RadioBase
 {
+    private string _name = "";
     public bool enc; // encryption enabled
     public byte encKey;
     public double freq = 1;
@@ -12,6 +14,22 @@ public class RadioBase
     //should the radio restransmit?
     public bool retransmit = false;
     public double secFreq = 1;
+
+    public string Name
+    {
+        get => _name;
+        set
+        {
+            value ??= "";
+
+            value = value.ToLowerInvariant().Trim();
+
+            value = NormaliseRadioRegex().Replace(value, "");
+
+            if (value.Length > 32) value = value.Substring(0, 32);
+            _name = value;
+        }
+    }
 
 
     /**
@@ -32,6 +50,7 @@ public class RadioBase
         if (encKey != compare.encKey) return false;
         if (retransmit != compare.retransmit) return false;
         if (!FreqCloseEnough(secFreq, compare.secFreq)) return false;
+        if (Name != compare?.Name) return false;
 
         return true;
     }
@@ -53,7 +72,12 @@ public class RadioBase
             modulation = modulation,
             secFreq = secFreq,
             encKey = encKey,
-            freq = freq
+            freq = freq,
+            Name = Name
         };
     }
+
+
+    [GeneratedRegex("[^a-zA-Z0-9]")]
+    private static partial Regex NormaliseRadioRegex();
 }

@@ -126,39 +126,8 @@ public class Bootstrapper : BootstrapperBase
 
         DisplayRootViewForAsync<MainViewModel>(settings);
         
-        UpdaterChecker.Instance.CheckForUpdate(ServerSettingsStore.Instance.GetServerSetting(ServerSettingsKeys.CHECK_FOR_BETA_UPDATES).BoolValue,
-            result =>
-            {
-                if (result.UpdateAvailable)
-                {
-                        //Thread.CurrentThread.CurrentUICulture = new CultureInfo("zh-CN");
-                        var choice = MessageBox.Show($"{Properties.Resources.MsgBoxUpdate1} {result.Branch} {Properties.Resources.MsgBoxUpdate2} {result.Branch} {Properties.Resources.MsgBoxUpdate3}\n\n{Properties.Resources.MsgBoxUpdate4}",
-                            Properties.Resources.MsgBoxUpdateTitle, MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
-                
-                        if (choice == MessageBoxResult.Yes)
-                        {
-                            try
-                            {
-                                UpdaterChecker.Instance.LaunchUpdater(result.Beta);
-                            }
-                            catch (Exception)
-                            {
-                                MessageBox.Show($"{Properties.Resources.MsgBoxUpdateFailed}",
-                                    Properties.Resources.MsgBoxUpdateFailedTitle, MessageBoxButton.YesNoCancel, MessageBoxImage.Information);
-                
-                                Process.Start( new ProcessStartInfo(result.Url)
-                                    { UseShellExecute = true });
-                            }
-                
-                        }
-                        else if (choice == MessageBoxResult.No)
-                        {
-                            Process.Start( new ProcessStartInfo(result.Url)
-                                { UseShellExecute = true });
-                           
-                        }
-                }
-            });
+        // Log version info instead of checking for updates
+        UpdaterChecker.Instance.LogVersionInfo();
     }
 
     protected override void BuildUp(object instance)
